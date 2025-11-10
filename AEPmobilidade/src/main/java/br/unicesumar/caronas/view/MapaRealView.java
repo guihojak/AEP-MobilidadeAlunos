@@ -9,80 +9,64 @@ import javafx.scene.web.WebView;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Painel Swing que exibe um mapa real interativo (OpenStreetMap via Leaflet)
- * totalmente funcional e inicializado de forma segura.
- */
 public class MapaRealView extends JPanel {
-    private final JFXPanel jfxPanel = new JFXPanel();
+
+    private final JFXPanel fxPanel = new JFXPanel();
     private WebEngine webEngine;
 
     public MapaRealView() {
         setLayout(new BorderLayout());
-        add(jfxPanel, BorderLayout.CENTER);
+        add(fxPanel, BorderLayout.CENTER);
 
-        inicializarMapa();
+        // inicia o JavaFX no contexto correto
+        Platform.runLater(this::inicializarMapa);
     }
+
     private void inicializarMapa() {
-        try {
-            if (Platform.isImplicitExit()) {
-                // Já inicializado
-                carregarMapa();
-            } else {
-                Platform.startup(() -> carregarMapa());
-            }
-        } catch (IllegalStateException e) {
-            // Toolkit já ativo → apenas recarrega o mapa
-            Platform.runLater(this::carregarMapa);
-        }
-    }
-
-    private void carregarMapa() {
         WebView webView = new WebView();
         webEngine = webView.getEngine();
 
-        String html = """
+        Scene scene = new Scene(webView);
+        fxPanel.setScene(scene);
+
+        // carrega o conteúdo HTML do mapa
+        Platform.runLater(() -> webEngine.loadContent(gerarHTMLMapa()));
+    }
+
+    private String gerarHTMLMapa() {
+        return """
             <!DOCTYPE html>
-            <html>
+            <html lang="pt-br">
             <head>
               <meta charset="utf-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-              <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+              <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+              <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
               <style>
-                html, body, #map { height: 100%; margin: 0; padding: 0; }
+                html, body { height: 100%%; margin: 0; }
+                #map { height: 100%%; width: 100%%; background: #f0f0f0; }
               </style>
             </head>
             <body>
               <div id="map"></div>
               <script>
-                var map = L.map('map').setView([-23.420999, -51.933056], 13);
+                // cria o mapa centrado em Maringá
+                var map = L.map('map').setView([-23.4205, -51.9331], 14);
+
+                // adiciona camada de tiles
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                  maxZoom: 19,
-                  attribution: '© OpenStreetMap contributors'
+                    attribution: '&copy; OpenStreetMap colaboradores',
+                    maxZoom: 19
                 }).addTo(map);
-                L.marker([-23.420999, -51.933056])
-                  .addTo(map)
-                  .bindPopup('Campus UniCesumar - Maringá')
-                  .openPopup();
+
+                // adiciona marcador
+                L.marker([-23.4205, -51.9331])
+                    .addTo(map)
+                    .bindPopup('Campus UniCesumar - Maringá')
+                    .openPopup();
               </script>
             </body>
             </html>
-            """;
-
-        webEngine.loadContent(html);
-        jfxPanel.setScene(new Scene(webView));
-    }
-
-
-    public void adicionarMarcador(double lat, double lon, String descricao) {
-        Platform.runLater(() -> {
-            if (webEngine != null) {
-                webEngine.executeScript(String.format(
-                        "L.marker([%f, %f]).addTo(map).bindPopup('%s').openPopup();",
-                        lat, lon, descricao
-                ));
-            }
-        });
+        """;
     }
 }

@@ -2,36 +2,53 @@ package br.unicesumar.caronas.controller;
 
 import br.unicesumar.caronas.dao.CaronaDAO;
 import br.unicesumar.caronas.model.Carona;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.net.http.*;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-/**
- * Controla as operações de caronas e suas regras de negócio.
- */
 public class CaronaController {
+    private final CaronaDAO dao = new CaronaDAO();
+    private final HttpClient http = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    private final CaronaDAO caronaDAO = new CaronaDAO();
+    public boolean criarCarona(Carona c) {
+        return dao.inserir(c);
+    }
 
-    /**
-     * Cria uma nova carona, validando data e vagas.
-     */
-    public boolean criarCarona(Carona carona) {
-        if (carona.getDataHora().isBefore(LocalDateTime.now())) {
-            System.out.println("Data/hora inválida (passada)!");
-            return false;
-        }
-        if (carona.getVagas() <= 0) {
-            System.out.println("Número de vagas inválido!");
-            return false;
-        }
-        return caronaDAO.inserir(carona);
+    public List<Carona> listarProximas() {
+        return dao.listarProximas();
     }
 
     /**
-     * Retorna todas as caronas futuras cadastradas.
+     * Geocode simples via Nominatim. Retorna Optional<double[]> {lat, lon}
      */
-    public List<Carona> listarProximas() {
-        return caronaDAO.listarProximas();
+    public Optional<double[]> geocode(String query) {
+        try {
+            String q = URLEncoder.encode(query, StandardCharsets.UTF_8);
+            String url = "https://nominatim.openstreetmap.org/search?q=" + q + "&format=json&limit=1";
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "AEP-mobilidade/1.0 (meuemail@example.com)")
+                    .GET().build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            JsonNode root = mapper.readTree(resp.body());
+            if (root.isArray() && root.size() > 0) {
+                JsonNode item = root.get(0);
+                double lat = item.get("lat").asDouble();
+                double lon = item.get("lon").asDouble();
+                return Optional.of(new double[]{lat, lon});
+            }
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        return Optional.empty();
     }
 }

@@ -2,42 +2,67 @@ package br.unicesumar.caronas.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Representa uma carona publicada por um usuário.
- */
 public class Carona {
     private int id;
-    private int motoristaId;
     private String origem;
     private String destino;
     private LocalDateTime dataHora;
     private int vagas;
-    private String descricao;
+    private int idUsuario; // ✅ novo campo: quem criou a carona
 
-    public Carona() {}
-
-    public Carona(int motoristaId, String origem, String destino, LocalDateTime dataHora, int vagas, String descricao) {
-        this.motoristaId = motoristaId;
-        this.origem = origem;
-        this.destino = destino;
-        this.dataHora = dataHora;
-        this.vagas = vagas;
-        this.descricao = descricao;
+    // --- Getters e Setters ---
+    public int getId() {
+        return id;
     }
 
-    // Getters e Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public int getMotoristaId() { return motoristaId; }
-    public void setMotoristaId(int motoristaId) { this.motoristaId = motoristaId; }
-    public String getOrigem() { return origem; }
-    public void setOrigem(String origem) { this.origem = origem; }
-    public String getDestino() { return destino; }
-    public void setDestino(String destino) { this.destino = destino; }
-    public LocalDateTime getDataHora() { return dataHora; }
-    public void setDataHora(LocalDateTime dataHora) { this.dataHora = dataHora; }
-    public int getVagas() { return vagas; }
-    public void setVagas(int vagas) { this.vagas = vagas; }
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getOrigem() {
+        return origem;
+    }
+
+    public void setOrigem(String origem) {
+        this.origem = origem;
+    }
+
+    public String getDestino() {
+        return destino;
+    }
+
+    public void setDestino(String destino) {
+        this.destino = destino;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public void setDataHora(LocalDateTime dataHora) {
+        this.dataHora = dataHora;
+    }
+
+    public int getVagas() {
+        return vagas;
+    }
+
+    public void setVagas(int vagas) {
+        this.vagas = vagas;
+    }
+
+    public int getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(int idUsuario) { // ✅ método faltante
+        this.idUsuario = idUsuario;
+    }
+
+    // --- Representação textual (para logs/debug) ---
+    @Override
+    public String toString() {
+        return String.format("Carona[%s -> %s, %s, Vagas: %d, Usuário: %d]",
+                origem, destino, dataHora, vagas, idUsuario);
+    }
 }
