@@ -1,10 +1,29 @@
 package br.unicesumar.caronas.model;
 
 public class Usuario {
+
+
     private int id;
     private String nome;
     private String email;
     private String senha;
+    private String matricula; // Novo atributo
+    private String telefone;  // Novo atributo
+
+
+    public Usuario() {
+    }
+
+
+    public Usuario(int id, String nome, String email, String senha, String matricula, String telefone) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.matricula = matricula;
+        this.telefone = telefone;
+    }
+
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -17,4 +36,21 @@ public class Usuario {
 
     public String getSenha() { return senha; }
     public void setSenha(String senha) { this.senha = senha; }
+
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
 }

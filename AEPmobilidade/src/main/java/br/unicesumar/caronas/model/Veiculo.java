@@ -1,33 +1,41 @@
 package br.unicesumar.caronas.model;
 
-/**
- * Armazena informações do veículo de um motorista.
- */
 public class Veiculo {
+
     private int id;
-    private int usuarioId;
+    private int idUsuario;
     private String modelo;
     private String placa;
-    private int capacidade;
+    private int capacidade; // ⚠️ NOVO CAMPO: capacidade
 
-    public Veiculo() {}
+    // Construtor Vazio
+    public Veiculo() {
+    }
 
-    public Veiculo(int usuarioId, String modelo, String placa, int capacidade) {
-        this.usuarioId = usuarioId;
+    // Construtor Completo
+    public Veiculo(int id, int idUsuario, String modelo, String placa, int capacidade) {
+        this.id = id;
+        this.idUsuario = idUsuario;
         this.modelo = modelo;
         this.placa = placa;
         this.capacidade = capacidade;
     }
 
-    // Getters e Setters
+    // --- Getters e Setters ---
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
-    public int getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(int usuarioId) { this.usuarioId = usuarioId; }
+
+    public int getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(int idUsuario) { this.idUsuario = idUsuario; }
+
     public String getModelo() { return modelo; }
     public void setModelo(String modelo) { this.modelo = modelo; }
+
     public String getPlaca() { return placa; }
     public void setPlaca(String placa) { this.placa = placa; }
+
+    // Getter e Setter para a nova capacidade
     public int getCapacidade() { return capacidade; }
     public void setCapacidade(int capacidade) { this.capacidade = capacidade; }
 }

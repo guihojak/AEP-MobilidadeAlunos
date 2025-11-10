@@ -26,7 +26,7 @@ public class PainelCaronasView extends JPanel {
     private final PainelPrincipalView principalView;
 
     private static final Color PRIMARY_BLUE = new Color(0, 120, 212);
-    private static final Color BACKGROUND_GRAY = new Color(240, 240, 240); // Fundo mais claro para contraste
+    private static final Color BACKGROUND_GRAY = new Color(240, 240, 240);
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public PainelCaronasView(Usuario usuario, PainelPrincipalView principalView) {
@@ -36,11 +36,9 @@ public class PainelCaronasView extends JPanel {
         this.principalView = principalView;
 
         setLayout(new BorderLayout(30, 30));
-        // Adiciona uma borda sutil ao redor de todo o painel de conteúdo
-        setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(40, 40, 40, 40),
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY.brighter(), 1, true)
-        ));
+
+        // Remoção da borda LineBorder rígida para um visual mais limpo (apenas padding)
+        setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
         setBackground(BACKGROUND_GRAY);
 
         // 1. Área de Título e Filtro (NORTH)
@@ -50,12 +48,11 @@ public class PainelCaronasView extends JPanel {
         JPanel painelCentral = new JPanel(new BorderLayout(0, 30));
         painelCentral.setBackground(BACKGROUND_GRAY);
 
-        // Tabela (Card com sombra)
         JComponent painelTabelaCard = criarPainelTabelaCard();
         painelCentral.add(painelTabelaCard, BorderLayout.CENTER);
 
-        // Botões de Ação (Rodapé Central)
-        painelCentral.add(criarPainelBotoes(), BorderLayout.SOUTH);
+        JPanel painelBotoes = criarPainelBotoes();
+        painelCentral.add(painelBotoes, BorderLayout.SOUTH);
 
         add(painelCentral, BorderLayout.CENTER);
 
@@ -66,7 +63,7 @@ public class PainelCaronasView extends JPanel {
      * Cria a área de topo: Título principal + Barra de busca rápida.
      */
     private JPanel criarPainelTopo() {
-        JPanel painelTopo = new JPanel(new BorderLayout(0, 15)); // Espaçamento vertical
+        JPanel painelTopo = new JPanel(new BorderLayout(0, 15));
         painelTopo.setBackground(BACKGROUND_GRAY);
 
         // Título Principal
@@ -77,16 +74,14 @@ public class PainelCaronasView extends JPanel {
 
         // Barra de Busca (Simulando um input de site)
         JTextField txtBusca = new JTextField("Buscar por origem ou destino...");
-        txtBusca.setFont(new Font("Segoe UI", Font.ITALIC, 14));
-        txtBusca.setForeground(Color.GRAY);
+        txtBusca.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txtBusca.setForeground(Color.GRAY.darker());
         txtBusca.setPreferredSize(new Dimension(400, 45));
 
-        // Estilo de input moderno (cantos arredondados e sombra)
-      //  txtBusca.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new ImageIcon(getClass().getResource("/images/search.png"))); // Ícone de busca
+        // ⚠️ Correção ARC: Usa string literal para arredondamento (compatibilidade máxima)
+        txtBusca.putClientProperty("TextComponent.arc", 10);
         txtBusca.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
-        txtBusca.putClientProperty(FlatClientProperties.TEXT_FIELD_PADDING, 10);
 
-        // Painel para alinhar a busca
         JPanel painelBusca = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         painelBusca.setBackground(BACKGROUND_GRAY);
         painelBusca.add(txtBusca);
@@ -97,7 +92,7 @@ public class PainelCaronasView extends JPanel {
     }
 
     /**
-     * Cria o painel da tabela encapsulado em um "Card" com sombra.
+     * Cria o painel da tabela encapsulado em um "Card" com arredondamento.
      */
     private JComponent criarPainelTabelaCard() {
         String[] colunas = {"Origem", "Destino", "Data/Hora", "Vagas", "Motorista"};
@@ -109,29 +104,29 @@ public class PainelCaronasView extends JPanel {
         tabelaCaronas = new JTable(modeloTabela);
         tabelaCaronas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabelaCaronas.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        tabelaCaronas.setRowHeight(40); // Linhas mais altas para visual web
+        tabelaCaronas.setRowHeight(40);
         tabelaCaronas.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 15));
 
         // Estilo de tabela limpo e suave
         tabelaCaronas.setShowGrid(false);
-        tabelaCaronas.setIntercellSpacing(new Dimension(0, 1)); // Espaçamento mínimo
-        tabelaCaronas.getTableHeader().setBackground(new Color(230, 230, 230)); // Header cinza suave
+        tabelaCaronas.setIntercellSpacing(new Dimension(0, 1));
+        tabelaCaronas.getTableHeader().setBackground(new Color(230, 230, 230));
+        tabelaCaronas.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
         tabelaCaronas.setBackground(Color.WHITE);
-        tabelaCaronas.setSelectionBackground(PRIMARY_BLUE.brighter()); // Cor de seleção suave
-        tabelaCaronas.setSelectionForeground(Color.BLACK); // Texto escuro na seleção
+        tabelaCaronas.setSelectionBackground(PRIMARY_BLUE.brighter());
+        tabelaCaronas.setSelectionForeground(Color.BLACK);
 
         JScrollPane scrollPane = new JScrollPane(tabelaCaronas);
-        scrollPane.setBackground(Color.WHITE); // Fundo do scroll pane branco
+        scrollPane.setBackground(Color.WHITE);
 
-        // Aplica o estilo de "Card" (sombra e cantos arredondados) ao ScrollPane
+        // Borda branca para 'padding' visual
+        scrollPane.setBorder(BorderFactory.createLineBorder(Color.WHITE, 10));
+
+        // ⚠️ ATENÇÃO: Apenas 'arc' e 'borderWidth' são mantidos. Sombras removidas!
         scrollPane.putClientProperty(FlatClientProperties.STYLE,
                 "arc: 12;" +
-                        "borderWidth: 0;" +
-                        "shadowWidth: 8;" +
-                        "shadowOpacity: 0.10;" + // Sombra mais sutil
-                        "shadowColor: #000000"
+                        "borderWidth: 0"
         );
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         // Adição do MouseListener (Funcionalidade)
         tabelaCaronas.addMouseListener(new MouseAdapter() {

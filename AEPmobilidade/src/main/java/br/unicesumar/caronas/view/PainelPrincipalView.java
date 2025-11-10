@@ -1,8 +1,8 @@
 package br.unicesumar.caronas.view;
 
 import br.unicesumar.caronas.model.Usuario;
-import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatClientProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,233 +10,180 @@ import java.awt.*;
 public class PainelPrincipalView extends JFrame {
 
     private final Usuario usuarioLogado;
-    private final CardLayout cardLayout;
-    private final JPanel painelConteudo;
-    private final MapaRealView mapaRealView;
+    private JTabbedPane tabbedPane;
 
-    // Cores e Estilos
     private static final Color PRIMARY_BLUE = new Color(0, 120, 212);
-    private static final Color HOVER_COLOR = new Color(220, 220, 220);
 
     public PainelPrincipalView(Usuario usuario) {
         this.usuarioLogado = usuario;
 
-        // 1. Aplica o tema moderno (FlatLaf)
+        // Configura o Look and Feel
         try {
             FlatIntelliJLaf.setup();
         } catch (Exception ex) {
-            System.err.println("Failed to initialize FlatLaf");
+            System.err.println("Failed to initialize FlatLaf: " + ex);
         }
 
-        setTitle("UniCarona - Bem-vindo, " + usuario.getNome());
+        setTitle("UniCarona - Painel Principal");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // ⚠️ REMOVIDA A TELA CHEIA. Definindo um tamanho fixo e centralizado.
-        setSize(1200, 800);
+        setSize(1200, 750);
         setLocationRelativeTo(null); // Centraliza a janela
 
-        // 2. Instancia Layout e Paineis
-        this.cardLayout = new CardLayout();
-        this.painelConteudo = new JPanel(cardLayout);
-
-        this.mapaRealView = new MapaRealView();
-
-        // 3. Cria e adiciona os paineis
-        JPanel painelCaronas = new PainelCaronasView(usuario, this);
-        JPanel painelPerfil = new PainelPerfilView(usuario);
-
-        painelConteudo.add(painelCaronas, "Caronas");
-        painelConteudo.add(mapaRealView, "Mapa");
-        painelConteudo.add(painelPerfil, "Perfil");
-
-        // 4. Cria a barra lateral de Navegação customizada
-        JPanel painelMenu = criarMenuLateral();
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, painelMenu, painelConteudo);
-        splitPane.setDividerLocation(200); // Largura fixa da barra lateral (melhor que 180)
-        splitPane.setDividerSize(1); // Deixa uma linha fina para separar
-        splitPane.setEnabled(false); // Impede que o usuário redimensione o split
-
-        getContentPane().add(splitPane);
-
-        // 5. Garante que a primeira tela seja Caronas
-        cardLayout.show(painelConteudo, "Caronas");
-
-        setVisible(true);
+        initComponents();
     }
 
-    // Método para exibir rota no mapa (mantido da integração anterior)
+    private void initComponents() {
+        tabbedPane = new JTabbedPane();
+
+        // Estilo das abas
+        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        tabbedPane.setForeground(PRIMARY_BLUE.darker());
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
+        // 1. Aba de Caronas (Tela Principal)
+        PainelCaronasView caronasView = new PainelCaronasView(usuarioLogado, this);
+        tabbedPane.addTab("  Explorar Caronas  ", caronasView);
+
+        // 2. Aba de Veículos (NOVA INTEGRAÇÃO)
+        PainelVeiculosView veiculosView = new PainelVeiculosView(usuarioLogado);
+        tabbedPane.addTab("  Meus Veículos  ", veiculosView);
+
+        // 3. Aba de Perfil (Tela de Detalhes do Usuário)
+        PainelPerfilView perfilView = new PainelPerfilView(usuarioLogado);
+        tabbedPane.addTab("  Meu Perfil  ", perfilView);
+
+        this.add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    // Método auxiliar para exibir a rota no mapa (usado pelo PainelCaronasView)
     public void exibirRotaNoMapa(String origem, String destino) {
-        cardLayout.show(painelConteudo, "Mapa");
-        mapaRealView.mostrarCarona(origem, destino);
+        // Implementação simulada
+        JOptionPane.showMessageDialog(this,
+                String.format("Exibindo rota de:\nOrigem: %s\nDestino: %s", origem, destino),
+                "Visualização de Rota", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // ⚠️ NOVO MÉTODO: Cria uma barra lateral com botões customizados (mais clean que o JTabbedPane)
-    private JPanel criarMenuLateral() {
-        JPanel painelMenu = new JPanel(new BorderLayout());
-        painelMenu.setBackground(Color.WHITE);
+    // Método principal para iniciar a aplicação (opcional, se não estiver em Main.java)
+    /*
+    public static void main(String[] args) {
+        // Exemplo: Criar um usuário de teste
+        Usuario u = new Usuario(1, "Ana Carolina", "ana.carolina@unicesumar.edu.br", "hashed_pass", "998877", "(44) 99999-0000");
 
-        // Título/Logo
-        JLabel lblLogo = new JLabel("UniCarona 🚗", SwingConstants.CENTER);
-        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblLogo.setForeground(PRIMARY_BLUE.darker());
-        lblLogo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        painelMenu.add(lblLogo, BorderLayout.NORTH);
-
-        // Painel de Botões (Centro)
-        JPanel painelBotoes = new JPanel();
-        painelBotoes.setLayout(new BoxLayout(painelBotoes, BoxLayout.Y_AXIS));
-        painelBotoes.setBackground(Color.WHITE);
-
-        // Cria os botões de navegação
-        JButton btnCaronas = criarBotaoMenu("🚗 Caronas", "Caronas");
-        JButton btnMapa = criarBotaoMenu("🗺️ Mapa", "Mapa");
-        JButton btnPerfil = criarBotaoMenu("👤 Perfil", "Perfil");
-
-        painelBotoes.add(btnCaronas);
-        painelBotoes.add(btnMapa);
-        painelBotoes.add(btnPerfil);
-
-        // Padding para centralizar verticalmente os botões
-        painelBotoes.add(Box.createVerticalGlue());
-
-        painelMenu.add(painelBotoes, BorderLayout.CENTER);
-
-        // Botão de Sair (Rodapé)
-        JButton btnSair = new JButton("Sair (Logout)");
-        btnSair.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnSair.setBackground(Color.RED);
-        btnSair.setForeground(Color.WHITE);
-        btnSair.setFocusPainted(false);
-        btnSair.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        btnSair.addActionListener(e -> {
-            new LoginView().setVisible(true);
-            dispose();
+        EventQueue.invokeLater(() -> {
+            new PainelPrincipalView(u).setVisible(true);
         });
-
-        JPanel painelRodape = new JPanel(new BorderLayout());
-        painelRodape.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-        painelRodape.setBackground(Color.WHITE);
-        painelRodape.add(btnSair, BorderLayout.NORTH); // Coloca o botão no topo do rodapé
-
-        painelMenu.add(painelRodape, BorderLayout.SOUTH);
-
-        return painelMenu;
     }
+    */
 
-    // Helper para criar botões customizados com ação de navegação
-    private JButton criarBotaoMenu(String texto, String cardName) {
-        JButton button = new JButton(texto);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setMaximumSize(new Dimension(180, 50));
-        button.setPreferredSize(new Dimension(180, 50));
-        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        button.setFocusPainted(false);
-        button.setContentAreaFilled(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    // =================================================================
+    // 👤 INNER CLASS: Painel Perfil (Corrigido para Soft Design)
+    // =================================================================
 
-        // Estilo de hover simples
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(HOVER_COLOR);
-                button.setOpaque(true);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(Color.WHITE);
-                button.setOpaque(false);
-            }
-        });
-
-        // Ação de navegação
-        button.addActionListener(e -> cardLayout.show(painelConteudo, cardName));
-        return button;
-    }
-
-    // 🔹 Painel de Perfil (Manter essa inner class)
     private static class PainelPerfilView extends JPanel {
         private static final Color PRIMARY_BLUE = new Color(0, 120, 212);
-        private static final Color BACKGROUND_GRAY = new Color(245, 245, 245);
+        private static final Color BACKGROUND_GRAY = new Color(240, 240, 240);
+        private final Usuario usuario;
 
         public PainelPerfilView(Usuario usuario) {
+            this.usuario = usuario;
             setLayout(new BorderLayout(0, 0));
             setBackground(BACKGROUND_GRAY);
             setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
-            // 1. Título Geral
-            JLabel titulo = new JLabel("Minha Conta", SwingConstants.LEFT);
-            titulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+            JLabel titulo = new JLabel("Minha Conta 👤", SwingConstants.LEFT);
+            titulo.setFont(new Font("Segoe UI", Font.BOLD, 36));
             titulo.setForeground(PRIMARY_BLUE.darker());
             titulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
             add(titulo, BorderLayout.NORTH);
 
-            // 2. Painel Central para centralizar o CARD do Perfil
             JPanel painelCentralizado = new JPanel(new GridBagLayout());
             painelCentralizado.setBackground(BACKGROUND_GRAY);
 
-            JPanel painelCard = criarCardPerfil(usuario);
-            painelCentralizado.add(painelCard);
+            JPanel containerCards = new JPanel();
+            containerCards.setLayout(new BoxLayout(containerCards, BoxLayout.Y_AXIS));
+            containerCards.setBackground(BACKGROUND_GRAY);
+            containerCards.add(Box.createVerticalStrut(20));
+
+            containerCards.add(criarCardDetalhes(usuario));
+            containerCards.add(Box.createVerticalStrut(30));
+            containerCards.add(criarCardAcoes());
+
+            painelCentralizado.add(containerCards);
 
             add(painelCentralizado, BorderLayout.CENTER);
         }
 
-        // Novo método para criar o "Card" do Perfil
-        private JPanel criarCardPerfil(Usuario usuario) {
-            // Card principal com sombra e cantos arredondados (Fluent/Soft Design)
+        private JPanel criarCardDetalhes(Usuario usuario) {
             JPanel card = new JPanel(new BorderLayout(30, 30));
-            card.setPreferredSize(new Dimension(500, 550)); // Tamanho fixo para destaque
+            card.setPreferredSize(new Dimension(550, 350));
             card.setBackground(Color.WHITE);
-            card.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+            card.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+            card.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Aplica o estilo de "Card" (sombra e cantos arredondados)
-            card.putClientProperty(FlatClientProperties.STYLE,
-                    "arc: 15;" +
-                            "shadowWidth: 10;" +
-                            "shadowOpacity: 0.15;"
-            );
+            // ⚠️ CORREÇÃO: Aplica apenas o arredondamento (arc)
+            card.putClientProperty(FlatClientProperties.STYLE, "arc: 15");
 
-            // --- Título do Card ---
-            JLabel tituloCard = new JLabel("Detalhes Pessoais", SwingConstants.CENTER);
-            tituloCard.setFont(new Font("Segoe UI", Font.BOLD, 22));
-            tituloCard.setForeground(PRIMARY_BLUE);
-            card.add(tituloCard, BorderLayout.NORTH);
+            // --- Ícone e Nome (NORTH) ---
+            JPanel painelTopo = new JPanel(new BorderLayout(20, 0));
+            painelTopo.setBackground(Color.WHITE);
+            painelTopo.add(criarIconePerfil(), BorderLayout.WEST);
 
-            // --- Painel de Dados (FlowLayout para centralizar itens verticais) ---
-            JPanel painelDados = new JPanel();
-            painelDados.setLayout(new BoxLayout(painelDados, BoxLayout.Y_AXIS));
+            JLabel lblNome = new JLabel("<html><b style='font-size: 20pt;'>"+ usuario.getNome() +"</b><br>"+ usuario.getEmail() +"</html>");
+            lblNome.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            painelTopo.add(lblNome, BorderLayout.CENTER);
+
+            card.add(painelTopo, BorderLayout.NORTH);
+
+            // --- Painel de Dados (CENTER) ---
+            JPanel painelDados = new JPanel(new GridLayout(3, 1, 10, 15));
             painelDados.setBackground(Color.WHITE);
             painelDados.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-            // Foto/Ícone
-            JPanel painelFoto = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            painelFoto.setBackground(Color.WHITE);
-            painelFoto.add(criarIconePerfil());
-            painelDados.add(painelFoto);
-
-            painelDados.add(Box.createVerticalStrut(25)); // Espaçamento
-
-            // Nome e Email (Alinhados à Esquerda, mas centrados no card)
-            painelDados.add(criarDetalhe("👤", "Nome:", usuario.getNome()));
-            painelDados.add(Box.createVerticalStrut(15));
-            painelDados.add(criarDetalhe("📧", "E-mail:", usuario.getEmail()));
-            painelDados.add(Box.createVerticalStrut(15));
+            painelDados.add(criarDetalhe("📱", "Telefone:", usuario.getTelefone() != null ? usuario.getTelefone() : "Não Cadastrado"));
+            painelDados.add(criarDetalhe("🎓", "Matrícula:", usuario.getMatricula()));
             painelDados.add(criarDetalhe("⭐️", "Reputação:", "5.0/5.0"));
 
-            painelDados.add(Box.createVerticalStrut(40));
+            card.add(painelDados, BorderLayout.CENTER);
 
-            // Botão Ação
+            return card;
+        }
+
+        private JPanel criarCardAcoes() {
+            JPanel card = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+            card.setPreferredSize(new Dimension(550, 100));
+            card.setBackground(Color.WHITE);
+            card.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+            card.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            // ⚠️ CORREÇÃO: Aplica apenas o arredondamento (arc)
+            card.putClientProperty(FlatClientProperties.STYLE, "arc: 15");
+
+            // Botão Gerenciar Veículos - Leva para a aba Veículos
             JButton btnVeiculos = new JButton("Gerenciar Veículos");
-            btnVeiculos.setAlignmentX(Component.CENTER_ALIGNMENT);
-            btnVeiculos.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnVeiculos.setFont(new Font("Segoe UI", Font.BOLD, 14));
             btnVeiculos.setBackground(PRIMARY_BLUE.darker());
             btnVeiculos.setForeground(Color.WHITE);
             btnVeiculos.setFocusPainted(false);
             btnVeiculos.setBorder(BorderFactory.createEmptyBorder(12, 25, 12, 25));
             btnVeiculos.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
 
-            painelDados.add(btnVeiculos);
+            btnVeiculos.addActionListener(e -> {
+                // Lógica para mudar para a aba de Veículos (se PainelPrincipalView fosse acessível)
+                // Como é static inner class, precisaria de uma referência ou método público na Main View.
+                JOptionPane.showMessageDialog(null, "Acesse a aba 'Meus Veículos' para gerenciar.", "Navegação", JOptionPane.INFORMATION_MESSAGE);
+            });
 
-            card.add(painelDados, BorderLayout.CENTER);
+            // Botão Editar Perfil
+            JButton btnEditar = new JButton("Editar Perfil");
+            btnEditar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            btnEditar.setBackground(new Color(100, 100, 100));
+            btnEditar.setForeground(Color.WHITE);
+            btnEditar.setFocusPainted(false);
+            btnEditar.setBorder(BorderFactory.createEmptyBorder(12, 25, 12, 25));
+            btnEditar.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
+
+            card.add(btnVeiculos);
+            card.add(btnEditar);
 
             return card;
         }
@@ -244,12 +191,12 @@ public class PainelPrincipalView extends JFrame {
         private JPanel criarDetalhe(String icone, String titulo, String valor) {
             JPanel painel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
             painel.setBackground(Color.WHITE);
-            painel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            painel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             JLabel lblIcone = new JLabel(icone);
             lblIcone.setFont(new Font("Segoe UI", Font.PLAIN, 20));
 
-            JLabel lblDetalhe = new JLabel(String.format("<html><b>%s</b> %s</html>", titulo, valor));
+            JLabel lblDetalhe = new JLabel(String.format("<html><b style='color: #555;'>%s</b> %s</html>", titulo, valor));
             lblDetalhe.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 
             painel.add(lblIcone);
@@ -275,22 +222,9 @@ public class PainelPrincipalView extends JFrame {
                 }
                 @Override
                 public Dimension getPreferredSize() {
-                    return new Dimension(100, 100);
+                    return new Dimension(80, 80);
                 }
             };
         }
     }
-
-        // Helper para criar labels com ícone (usando Unicode)
-        private JPanel criarDetalhe(String icone, String titulo, String valor) {
-            JPanel painel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-            painel.setBackground(Color.WHITE);
-            JLabel lblIcone = new JLabel(icone);
-            lblIcone.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-            JLabel lblDetalhe = new JLabel(String.format("<html><b>%s</b> %s</html>", titulo, valor));
-            lblDetalhe.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-            painel.add(lblIcone);
-            painel.add(lblDetalhe);
-            return painel;
-        }
-    }
+}
