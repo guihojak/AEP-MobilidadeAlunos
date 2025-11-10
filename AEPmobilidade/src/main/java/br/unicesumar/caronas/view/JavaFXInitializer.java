@@ -1,43 +1,20 @@
 package br.unicesumar.caronas.view;
 
-import javafx.application.Platform;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
+import javafx.embed.swing.JFXPanel;
 
 /**
- * Inicializa o toolkit JavaFX apenas uma vez, de forma thread-safe.
+ * Classe auxiliar para garantir que o toolkit do JavaFX seja inicializado
+ * apenas uma vez na thread AWT (Swing).
  */
-public final class JavaFXInitializer {
-    private static final AtomicBoolean initialized = new AtomicBoolean(false);
+public class JavaFXInitializer {
 
-    private JavaFXInitializer() {}
+    private static boolean initialized = false;
 
     public static void init() {
-        if (initialized.get()) return;
-
-        CountDownLatch latch = new CountDownLatch(1);
-
-        Thread t = new Thread(() -> {
-            try {
-                // Se já inicializado, Platform.startup lançará IllegalStateException; capturamos abaixo.
-                Platform.startup(() -> {
-                    // No-op: apenas inicializa o toolkit
-                });
-            } catch (IllegalStateException ex) {
-                // Já inicializado — ignora
-            } finally {
-                initialized.set(true);
-                latch.countDown();
-            }
-        }, "JavaFX-Initer");
-        t.setDaemon(true);
-        t.start();
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        if (!initialized) {
+            // Inicializa o JavaFX toolkit na thread AWT (se não estiver na thread AWT, ele faz o agendamento correto)
+            new JFXPanel();
+            initialized = true;
         }
     }
 }

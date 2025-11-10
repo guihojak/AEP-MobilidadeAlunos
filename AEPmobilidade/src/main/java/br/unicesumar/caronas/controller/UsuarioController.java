@@ -25,4 +25,8 @@ public class UsuarioController {
         usuario.setSenha(senha);
         return usuarioDAO.inserir(usuario);
     }
+
+    public String getNomeUsuario(int id) {
+        return usuarioDAO.getNomeUsuario(id);
+    }
 }
